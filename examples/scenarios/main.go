@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
 
@@ -25,32 +26,22 @@ func main() {
 
 	for i, scenario := range list {
 		fmt.Printf("[%02d] %s\n", i+1, scenario.Name)
-		fmt.Printf("Category    : %s\n", scenario.Category)
+		fmt.Printf("ID          : %s\n", scenario.ID)
 		fmt.Printf("Description : %s\n", scenario.Description)
-		fmt.Printf("Enabled     : %v\n", scenario.Enabled)
+		fmt.Printf("Timeout     : %s\n", scenario.Timeout)
 
-		if len(scenario.Tags) > 0 {
-			fmt.Printf("Tags        : %v\n", scenario.Tags)
+		result := scenario.Execute(context.Background())
+
+		fmt.Printf("Status      : %s\n", result.Status)
+		fmt.Printf("Summary     : %s\n", result.Summary)
+		fmt.Printf("Duration    : %s\n", result.Duration)
+
+		if result.Err != nil {
+			fmt.Printf("Error       : %v\n", result.Err)
 		}
 
 		fmt.Println("----------------------------------------")
-
-		if !scenario.Enabled {
-			continue
-		}
-
-		fmt.Printf("Running %q...\n", scenario.Name)
-
-		if err := scenario.Run(); err != nil {
-			fmt.Printf("Result: FAILED (%v)\n\n", err)
-			continue
-		}
-
-		fmt.Println("Result: PASSED")
-		fmt.Println()
 	}
 
-	fmt.Println("========================================")
 	fmt.Println("Scenario execution completed.")
-	fmt.Println("========================================")
 }

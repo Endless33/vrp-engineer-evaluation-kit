@@ -3,6 +3,7 @@ package cli
 import (
 	"bytes"
 	"errors"
+	"io"
 	"testing"
 )
 
@@ -12,11 +13,10 @@ func TestRegisterCommand(t *testing.T) {
 	err := c.Register(Command{
 		Name:        "test",
 		Description: "test command",
-		Run: func(w interface{ Write([]byte) (int, error) }, args []string) error {
+		Run: func(w io.Writer, args []string) error {
 			return nil
 		},
 	})
-
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -32,7 +32,7 @@ func TestRegisterDuplicateCommand(t *testing.T) {
 	cmd := Command{
 		Name:        "duplicate",
 		Description: "duplicate command",
-		Run: func(w interface{ Write([]byte) (int, error) }, args []string) error {
+		Run: func(w io.Writer, args []string) error {
 			return nil
 		},
 	}
@@ -54,12 +54,11 @@ func TestExecuteCommand(t *testing.T) {
 	err := c.Register(Command{
 		Name:        "run",
 		Description: "run command",
-		Run: func(w interface{ Write([]byte) (int, error) }, args []string) error {
+		Run: func(w io.Writer, args []string) error {
 			executed = true
 			return nil
 		},
 	})
-
 	if err != nil {
 		t.Fatalf("Register failed: %v", err)
 	}
@@ -89,13 +88,15 @@ func TestPrintHelp(t *testing.T) {
 		output:   buffer,
 	}
 
-	_ = c.Register(Command{
+	if err := c.Register(Command{
 		Name:        "alpha",
 		Description: "alpha command",
-		Run: func(w interface{ Write([]byte) (int, error) }, args []string) error {
+		Run: func(w io.Writer, args []string) error {
 			return nil
 		},
-	})
+	}); err != nil {
+		t.Fatalf("Register failed: %v", err)
+	}
 
 	c.PrintHelp()
 

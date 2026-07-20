@@ -6,34 +6,33 @@ import (
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/config"
 )
 
+func printConfiguration(title string, cfg config.Config) {
+	fmt.Println(title)
+	fmt.Println("----------------------------------------")
+	fmt.Printf("Output Directory : %s\n", cfg.OutputDirectory)
+	fmt.Printf("Evidence Dir     : %s\n", cfg.EvidenceDir)
+	fmt.Printf("Reports Dir      : %s\n", cfg.ReportsDir)
+	fmt.Printf("Manifest Name    : %s\n", cfg.ManifestName)
+	fmt.Printf("Is Default       : %v\n", cfg.IsDefault())
+	fmt.Println()
+}
+
 func main() {
 	fmt.Println("========================================")
 	fmt.Println("VRP Configuration Demo")
 	fmt.Println("========================================")
+	fmt.Println()
 
 	cfg := config.Default()
+	printConfiguration("Default Configuration", cfg)
 
-	fmt.Println()
-	fmt.Println("Default Configuration")
-	fmt.Println("----------------------------------------")
-	fmt.Printf("Output Directory : %s\n", cfg.OutputDirectory)
-	fmt.Printf("Report Name      : %s\n", cfg.ReportName)
-	fmt.Printf("Verbose          : %v\n", cfg.Verbose)
+	cfg.OutputDirectory = "demo-output"
+	cfg.EvidenceDir = "demo-output/evidence"
+	cfg.ReportsDir = "demo-output/reports"
+	cfg.ManifestName = "demo-manifest.json"
 
-	fmt.Println()
-	fmt.Println("Applying custom configuration...")
+	printConfiguration("Modified Configuration", cfg)
 
-	cfg.OutputDirectory = "./evaluation-results"
-	cfg.ReportName = "engineering-evaluation.md"
-	cfg.Verbose = true
-
-	fmt.Println()
-	fmt.Println("Updated Configuration")
-	fmt.Println("----------------------------------------")
-	fmt.Printf("Output Directory : %s\n", cfg.OutputDirectory)
-	fmt.Printf("Report Name      : %s\n", cfg.ReportName)
-	fmt.Printf("Verbose          : %v\n", cfg.Verbose)
-
-	fmt.Println()
-	fmt.Println("Configuration demonstration completed successfully.")
+	cfg.ResetToDefaults()
+	printConfiguration("Reset Configuration", cfg)
 }

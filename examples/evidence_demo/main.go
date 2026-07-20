@@ -19,14 +19,26 @@ func main() {
 		log.Fatalf("evaluation failed: %v", err)
 	}
 
-	builder := evidence.New()
-
-	ev, err := builder.Build(result)
-	if err != nil {
-		log.Fatalf("failed to build evidence: %v", err)
+	verdict := "FAILED"
+	if result.Passed {
+		verdict = "PASSED"
 	}
 
-	data, err := json.MarshalIndent(ev, "", "  ")
+	record, err := evidence.NewRecord(
+		"evidence-demo",
+		"evaluation-run",
+		verdict,
+		result.Message,
+		map[string]string{
+			"duration": result.Duration.String(),
+			"source":   "public-evaluation-kit",
+		},
+	)
+	if err != nil {
+		log.Fatalf("failed to create evidence: %v", err)
+	}
+
+	data, err := json.MarshalIndent(record, "", "  ")
 	if err != nil {
 		log.Fatalf("failed to marshal evidence: %v", err)
 	}
@@ -38,7 +50,6 @@ func main() {
 
 	fmt.Println()
 	fmt.Printf("Evaluation Passed : %v\n", result.Passed)
-	fmt.Printf("Evidence Version  : %s\n", ev.Version)
+	fmt.Printf("Evidence Format   : %s\n", record.FormatVersion)
 	fmt.Printf("Evidence Size     : %d bytes\n", len(data))
-	fmt.Println("Evidence demonstration completed successfully.")
 }

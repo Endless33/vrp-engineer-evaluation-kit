@@ -4,6 +4,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/output"
 )
@@ -13,13 +15,35 @@ func main() {
 	fmt.Println("VRP Manifest Demo")
 	fmt.Println("========================================")
 
-	manifest := output.NewManifest()
+	tempDir, err := os.MkdirTemp("", "vrp-manifest-demo-*")
+	if err != nil {
+		log.Fatalf("failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
 
-	manifest.AddArtifact("engineering-report.md")
-	manifest.AddArtifact("evaluation-results.json")
-	manifest.AddArtifact("evidence.json")
-	manifest.AddArtifact("runtime.log")
-	manifest.AddArtifact("manifest.json")
+	artifactNames := []string{
+		"engineering-report.md",
+		"evaluation-results.json",
+		"evidence.json",
+		"runtime.log",
+	}
+
+	manifest, err := output.NewManifest("manifest-demo")
+	if err != nil {
+		log.Fatalf("failed to create manifest: %v", err)
+	}
+
+	for _, name := range artifactNames {
+		path := filepath.Join(tempDir, name)
+
+		if err := os.WriteFile(path, []byte("public artifact: "+name+"\n"), 0o644); err != nil {
+			log.Fatalf("failed to create artifact: %v", err)
+		}
+
+		if err := manifest.AddFile(path); err != nil {
+			log.Fatalf("failed to add artifact: %v", err)
+		}
+	}
 
 	data, err := json.MarshalIndent(manifest, "", "  ")
 	if err != nil {
@@ -27,11 +51,6 @@ func main() {
 	}
 
 	fmt.Println()
-	fmt.Println("Generated Manifest")
-	fmt.Println("----------------------------------------")
 	fmt.Println(string(data))
-
-	fmt.Println()
-	fmt.Printf("Artifacts: %d\n", len(manifest.Artifacts))
-	fmt.Println("Manifest demonstration completed successfully.")
+	fmt.Printf("\nArtifacts: %d\n", len(manifest.Artifacts))
 }

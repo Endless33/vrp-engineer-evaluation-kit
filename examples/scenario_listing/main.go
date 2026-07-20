@@ -24,21 +24,9 @@ func main() {
 
 	for index, scenario := range list {
 		fmt.Printf("[%02d] %s\n", index+1, scenario.Name)
-		fmt.Printf("Category    : %s\n", scenario.Category)
+		fmt.Printf("ID          : %s\n", scenario.ID)
 		fmt.Printf("Description : %s\n", scenario.Description)
-		fmt.Printf("Enabled     : %v\n", scenario.Enabled)
-
-		if len(scenario.Tags) > 0 {
-			fmt.Printf("Tags        : ")
-			for i, tag := range scenario.Tags {
-				if i > 0 {
-					fmt.Print(", ")
-				}
-				fmt.Print(tag)
-			}
-			fmt.Println()
-		}
-
+		fmt.Printf("Timeout     : %s\n", scenario.Timeout)
 		fmt.Println("----------------------------------------")
 	}
 

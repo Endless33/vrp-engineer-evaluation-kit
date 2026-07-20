@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"log"
 	"path/filepath"
@@ -17,7 +16,7 @@ func main() {
 	fmt.Println("VRP Full Evaluation Pipeline")
 	fmt.Println("========================================")
 
-	outDir := "pipeline-output"
+	const outDir = "pipeline-output"
 
 	if err := output.EnsureDirectory(outDir); err != nil {
 		log.Fatalf("failed to create output directory: %v", err)
@@ -28,50 +27,50 @@ func main() {
 		log.Fatalf("evaluation failed: %v", err)
 	}
 
-	reportGenerator := report.New()
-
 	reportPath := filepath.Join(outDir, "evaluation-report.md")
 
-	if err := reportGenerator.WriteMarkdown(reportPath, result); err != nil {
+	if err := report.New().WriteMarkdown(reportPath, result); err != nil {
 		log.Fatalf("failed to write report: %v", err)
 	}
 
-	evidenceBuilder := evidence.New()
-
-	bundle, err := evidenceBuilder.Build(result)
-	if err != nil {
-		log.Fatalf("failed to build evidence: %v", err)
+	verdict := "FAILED"
+	if result.Passed {
+		verdict = "PASSED"
 	}
 
-	data, err := json.MarshalIndent(bundle, "", "  ")
-	if err != nil {
-		log.Fatalf("failed to marshal evidence: %v", err)
-	}
-
-	evidencePath, err := output.WriteFile(
-		outDir,
-		"evidence.json",
-		data,
+	record, err := evidence.NewRecord(
+		"full-pipeline-evidence",
+		"public-engineering-evaluation",
+		verdict,
+		result.Message,
+		map[string]string{
+			"duration": result.Duration.String(),
+		},
 	)
 	if err != nil {
+		log.Fatalf("failed to create evidence: %v", err)
+	}
+
+	evidencePath := filepath.Join(outDir, "evidence.json")
+
+	if err := evidence.WriteJSON(evidencePath, record); err != nil {
 		log.Fatalf("failed to write evidence: %v", err)
 	}
 
-	manifest := output.NewManifest()
-	manifest.AddArtifact(reportPath)
-	manifest.AddArtifact(evidencePath)
-
-	manifestData, err := json.MarshalIndent(manifest, "", "  ")
+	manifest, err := output.NewManifest("full-evaluation-pipeline")
 	if err != nil {
-		log.Fatalf("failed to marshal manifest: %v", err)
+		log.Fatalf("failed to create manifest: %v", err)
 	}
 
-	manifestPath, err := output.WriteFile(
-		outDir,
-		"manifest.json",
-		manifestData,
-	)
-	if err != nil {
+	for _, path := range []string{reportPath, evidencePath} {
+		if err := manifest.AddFile(path); err != nil {
+			log.Fatalf("failed to add artifact %s: %v", path, err)
+		}
+	}
+
+	manifestPath := filepath.Join(outDir, "manifest.json")
+
+	if err := manifest.Write(manifestPath); err != nil {
 		log.Fatalf("failed to write manifest: %v", err)
 	}
 

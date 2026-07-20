@@ -1,12 +1,16 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log"
+	"os"
+	"path/filepath"
 
+	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/cli"
+	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/config"
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/evaluator"
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/evidence"
-	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/logging"
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/output"
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/report"
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/scenarios"
@@ -14,12 +18,84 @@ import (
 )
 
 func main() {
-	logger := logging.New()
+	fmt.Println("========================================")
+	fmt.Println("VRP Engineer Evaluation Kit")
+	fmt.Println("Complete Public API Example")
+	fmt.Println("========================================")
+	fmt.Printf("Version: %s\n", version.String())
 
-	logger.Section("VRP Engineer Evaluation Kit")
-	logger.Info("Running complete demonstration.")
+	cfg := config.Default()
 
-	fmt.Printf("Version: %s\n\n", version.String())
+	tempDir, err := os.MkdirTemp("", "vrp-all-example-*")
+	if err != nil {
+		log.Fatalf("failed to create temporary directory: %v", err)
+	}
+	defer os.RemoveAll(tempDir)
+
+	cfg.OutputDirectory = tempDir
+	cfg.ReportsDir = filepath.Join(tempDir, "reports")
+	cfg.EvidenceDir = filepath.Join(tempDir, "evidence")
+	cfg.ManifestName = "manifest.json"
+
+	if err := output.EnsureDirectory(cfg.ReportsDir); err != nil {
+		log.Fatalf("failed to create reports directory: %v", err)
+	}
+
+	if err := output.EnsureDirectory(cfg.EvidenceDir); err != nil {
+		log.Fatalf("failed to create evidence directory: %v", err)
+	}
+
+	result, err := evaluator.Run()
+	if err != nil {
+		log.Fatalf("evaluation failed: %v", err)
+	}
+
+	reportPath := filepath.Join(cfg.ReportsDir, "evaluation-report.md")
+
+	if err := report.New().WriteMarkdown(reportPath, result); err != nil {
+		log.Fatalf("failed to write report: %v", err)
+	}
+
+	verdict := "FAILED"
+	if result.Passed {
+		verdict = "PASSED"
+	}
+
+	record, err := evidence.NewRecord(
+		"complete-example",
+		"public-engineering-evaluation",
+		verdict,
+		result.Message,
+		map[string]string{
+			"duration": result.Duration.String(),
+		},
+	)
+	if err != nil {
+		log.Fatalf("failed to create evidence: %v", err)
+	}
+
+	evidencePath := filepath.Join(cfg.EvidenceDir, "evidence.json")
+
+	if err := evidence.WriteJSON(evidencePath, record); err != nil {
+		log.Fatalf("failed to write evidence: %v", err)
+	}
+
+	manifest, err := output.NewManifest("complete-public-api-example")
+	if err != nil {
+		log.Fatalf("failed to create manifest: %v", err)
+	}
+
+	for _, path := range []string{reportPath, evidencePath} {
+		if err := manifest.AddFile(path); err != nil {
+			log.Fatalf("failed to add artifact: %v", err)
+		}
+	}
+
+	manifestPath := filepath.Join(cfg.OutputDirectory, cfg.ManifestName)
+
+	if err := manifest.Write(manifestPath); err != nil {
+		log.Fatalf("failed to write manifest: %v", err)
+	}
 
 	registry := scenarios.NewRegistry()
 
@@ -27,40 +103,31 @@ func main() {
 		log.Fatalf("failed to register scenarios: %v", err)
 	}
 
-	logger.Info("Registered scenarios: %d", len(registry.List()))
+	passedScenarios := 0
 
-	result, err := evaluator.Run()
-	if err != nil {
-		log.Fatalf("evaluation failed: %v", err)
+	for _, scenario := range registry.List() {
+		scenarioResult := scenario.Execute(context.Background())
+
+		if scenarioResult.Status == scenarios.StatusPassed {
+			passedScenarios++
+		}
 	}
 
-	builder := evidence.New()
+	application := cli.New()
 
-	bundle, err := builder.Build(result)
-	if err != nil {
-		log.Fatalf("failed to build evidence: %v", err)
+	if err := cli.RegisterDefaultCommands(application); err != nil {
+		log.Fatalf("failed to register CLI commands: %v", err)
 	}
-
-	reporter := report.New()
-
-	const reportFile = "all-demo-report.md"
-
-	if err := reporter.WriteMarkdown(reportFile, result); err != nil {
-		log.Fatalf("failed to generate report: %v", err)
-	}
-
-	manifest := output.NewManifest()
-	manifest.AddArtifact(reportFile)
-	manifest.AddArtifact("evidence.json")
 
 	fmt.Println()
-	fmt.Println("========================================")
-	fmt.Println("Complete Demonstration Summary")
-	fmt.Println("========================================")
+	fmt.Println("Summary")
+	fmt.Println("----------------------------------------")
 	fmt.Printf("Evaluation Passed : %v\n", result.Passed)
-	fmt.Printf("Evidence Version  : %s\n", bundle.Version)
-	fmt.Printf("Artifacts         : %d\n", len(manifest.Artifacts))
-	fmt.Printf("Report            : %s\n", reportFile)
+	fmt.Printf("Scenarios Passed  : %d/%d\n", passedScenarios, registry.Count())
+	fmt.Printf("Report            : %s\n", reportPath)
+	fmt.Printf("Evidence          : %s\n", evidencePath)
+	fmt.Printf("Manifest          : %s\n", manifestPath)
+
 	fmt.Println()
-	fmt.Println("Complete demonstration finished successfully.")
+	application.PrintHelp()
 }

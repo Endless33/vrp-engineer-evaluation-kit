@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"os"
+	"log"
 
 	"github.com/Endless33/vrp-engineer-evaluation-kit/internal/cli"
 )
@@ -15,30 +15,16 @@ func main() {
 
 	application := cli.New()
 
-	fmt.Printf("Executable : %s\n", os.Args[0])
-
-	fmt.Println()
-	fmt.Println("Available Commands")
-	fmt.Println("----------------------------------------")
-
-	for _, command := range application.Commands() {
-		fmt.Printf("  %-16s %s\n", command.Name, command.Description)
+	if err := cli.RegisterDefaultCommands(application); err != nil {
+		log.Fatalf("failed to register commands: %v", err)
 	}
 
 	fmt.Println()
-	fmt.Println("Example Usage")
-	fmt.Println("----------------------------------------")
-	fmt.Println("vrp-evaluator run")
-	fmt.Println("vrp-evaluator version")
-	fmt.Println("vrp-evaluator help")
-
-	fmt.Println()
-	fmt.Println("Displaying built-in help")
+	fmt.Println("Built-in Help")
 	fmt.Println("----------------------------------------")
 
-	if err := application.Execute([]string{"help"}); err != nil {
-		fmt.Printf("Error: %v\n", err)
-		return
+	if err := application.Execute("help", nil); err != nil {
+		log.Fatalf("help command failed: %v", err)
 	}
 
 	fmt.Println()
