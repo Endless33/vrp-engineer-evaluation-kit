@@ -1,82 +1,227 @@
-# Security Policy
+# VRP Security Policy
 
-# Security Boundary
-
-This repository is an engineering evaluation environment.
-
-It is intentionally separated from the protected VRP runtime.
-
-Its purpose is to allow independent engineering evaluation without exposing confidential implementation details.
+**Project:** Veil Routing Protocol  
+**Abbreviation:** VRP  
+**Document:** Security Policy  
+**Status:** Public  
+**Version:** 1.0
 
 ---
 
-# Scope
+# 1. Purpose
 
-This repository contains only public engineering materials.
+This document defines the public security policy for the Veil Routing Protocol (VRP) engineering repositories.
 
-Examples include:
+It explains:
 
-- evaluation scenarios;
-- documentation;
-- evidence validation;
-- reporting;
-- laboratory configurations;
-- reproducible test environments.
+- how security concerns should be reported;
+- what reviewers should expect during evaluation;
+- which behaviors are considered expected;
+- which behaviors should immediately stop evaluation;
+- how vulnerabilities are handled;
+- what is inside the public evaluation boundary;
+- what remains outside the public boundary.
 
-It does **not** contain:
+This document is intended for:
 
-- protected runtime source code;
-- proprietary algorithms;
-- internal authority logic;
-- production secrets;
-- private cryptographic keys;
-- confidential implementation details.
+- security researchers;
+- infrastructure engineers;
+- protocol engineers;
+- Pilot participants;
+- independent reviewers;
+- enterprise security teams;
+- universities;
+- research laboratories.
 
 ---
 
-# Reporting Security Issues
+# 2. Security Philosophy
 
-If you believe you have identified a reproducible engineering issue within the published evaluation environment, please prepare a complete technical report including:
+VRP follows several engineering principles.
 
-- environment information;
+Security is not assumed.
+
+Security must be continuously verified.
+
+Engineering claims must remain reproducible.
+
+Failures must produce deterministic outcomes.
+
+Trust boundaries must be explicit.
+
+Unexpected behavior must be investigated.
+
+Every component should fail safely whenever possible.
+
+---
+
+# 3. Public Security Objectives
+
+The public repositories are designed to support evaluation while protecting confidential implementation details.
+
+Public materials aim to provide:
+
+- deterministic validation;
+- transparent documentation;
+- reproducible behavior;
+- evidence verification;
+- tamper detection;
+- reviewable interfaces;
+- controlled Pilot preparation.
+
+Public repositories are not intended to expose:
+
+- protected runtime algorithms;
+- confidential authority logic;
+- proprietary recovery mechanisms;
+- internal cryptographic material;
+- protected operational procedures;
+- non-public deployment infrastructure.
+
+---
+
+# 4. Responsible Evaluation
+
+Reviewers are encouraged to perform independent analysis.
+
+Recommended activities include:
+
+- source-code review;
+- dependency inspection;
+- static analysis;
+- race detection;
+- reproducible builds;
+- filesystem monitoring;
+- network monitoring;
+- memory observation;
+- sandbox execution;
+- adversarial testing;
+- evidence verification.
+
+Organizations should follow their own internal security procedures.
+
+---
+
+# 5. Security Reporting
+
+If a potential security issue is discovered, the report should include:
+
+- affected repository;
+- commit hash;
+- operating system;
+- Go version;
 - reproduction steps;
-- configuration;
 - expected behavior;
 - observed behavior;
-- logs;
-- exported evidence;
-- affected component(s).
+- relevant logs;
+- generated evidence;
+- screenshots if applicable;
+- packet captures when relevant.
 
-Reports that include sufficient technical evidence are greatly appreciated.
-
----
-
-# Responsible Engineering
-
-Constructive technical review improves engineering quality.
-
-Issues supported by reproducible evidence will be investigated and, where appropriate, corrected.
-
-Unsupported claims, speculation, or unverifiable reports cannot be meaningfully evaluated.
+Reports should be technically reproducible whenever possible.
 
 ---
 
-# Evaluation Environment
+# 6. Good Faith Research
 
-This repository is not intended for production deployment.
+Independent security research is welcomed.
 
-It exists solely to support independent engineering evaluation of publicly documented VRP behavior.
+Good-faith research includes:
+
+- responsible testing;
+- coordinated disclosure;
+- reproducible reporting;
+- technical documentation;
+- independent verification.
+
+The project values evidence over speculation.
 
 ---
 
-# Guiding Principle
+# 7. Out of Scope
 
-Engineering decisions should be based on reproducible evidence.
+The following are generally outside the scope of the public repositories:
 
-Not assumptions.
+- attacks against third-party infrastructure;
+- attacks against unrelated software;
+- social engineering;
+- physical attacks;
+- supply-chain attacks against external vendors;
+- compromised reviewer environments;
+- vulnerabilities introduced by modified forks.
 
-Not opinions.
+---
 
-Not marketing.
+# 8. Security Expectations
 
-Only independently verifiable technical results.
+Reviewers should never assume that software is secure simply because:
+
+- documentation exists;
+- tests pass;
+- the repository is public;
+- the author is identified;
+- signatures are present.
+
+Every release should be independently evaluated.
+
+---
+
+# 9. Disclosure Process
+
+The preferred disclosure process is:
+
+1. reproduce the issue;
+2. collect evidence;
+3. prepare a technical report;
+4. contact the official project security address;
+5. allow reasonable time for investigation;
+6. coordinate publication if appropriate.
+
+---
+
+# 10. Security Boundaries
+
+The public repositories represent only the public engineering boundary.
+
+They are intentionally separated from:
+
+- protected runtime implementation;
+- confidential deployment procedures;
+- proprietary operational logic;
+- private Pilot infrastructure.
+
+Reviewers should avoid drawing conclusions about components that are intentionally outside the published scope.
+
+---
+
+# 11. Security Principles
+
+VRP engineering follows these principles:
+
+- explicit trust boundaries;
+- deterministic behavior;
+- least necessary exposure;
+- reproducible validation;
+- fail-closed design where applicable;
+- verifiable evidence;
+- documented limitations;
+- continuous review.
+
+---
+
+# 12. Security Disclaimer
+
+No software can be guaranteed to be free from defects.
+
+No security document can replace independent technical review.
+
+No engineering claim should be accepted without evidence.
+
+The purpose of this policy is transparency, accountability, and responsible engineering—not absolute guarantees.
+
+---
+
+**Vitalijus Riabovas**  
+Original Author and Architect of the Veil Routing Protocol  
+Public Engineering Identity: Endless33  
+Lithuania
